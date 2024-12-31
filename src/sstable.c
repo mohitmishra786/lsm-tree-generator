@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct SSTable {
-    FILE* file;
-    char fname[256];
-};
+// struct SSTable {
+//     FILE* file;
+//     char fname[256];
+// };
 
 SSTable* sstable_create(const char* fname) {
     SSTable* ss = malloc(sizeof(SSTable));
@@ -37,7 +37,7 @@ const char* sstable_get(SSTable* ss, const char* key) {
         if (val) {
             *val = '\0';
             if (strcmp(line, key) == 0) {
-                val++; 
+                val++;
                 size_t val_len = strlen(val);
                 if (val_len > 0 && val[val_len - 1] == '\n') {
                     val[val_len - 1] = '\0'; // Remove newline character
