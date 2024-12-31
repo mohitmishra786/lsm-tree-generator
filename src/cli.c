@@ -5,6 +5,36 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
+
+void run_benchmark(LSMTree* lsm) {
+    const int num_keys = 1000000;
+    const int num_negative_tests = 100000;
+    const int num_random_tests = 100000;
+    char key[20];
+    double negative_start, negative_end, random_start, random_end;
+
+    // Negative access benchmark
+    negative_start = get_current_time();
+    for (int i = num_keys; i < num_keys + num_negative_tests; i++) {
+        snprintf(key, sizeof(key), "key%d", i);
+        LookupSource source;
+        lsm_get(lsm, key, &source);
+    }
+    negative_end = get_current_time();
+    printf("Negative access time: %f seconds\n", negative_end - negative_start);
+
+    // Random access benchmark
+    random_start = get_current_time();
+    for (int i = 0; i < num_random_tests; i++) {
+        int rand_key = rand() % num_keys;
+        snprintf(key, sizeof(key), "key%d", rand_key);
+        LookupSource source;
+        lsm_get(lsm, key, &source);
+    }
+    random_end = get_current_time();
+    printf("Random access time: %f seconds\n", random_end - random_start);
+}
 
 void display_lsm_tree(LSMTree* lsm) {
     printf("\n--- LSM Tree Visualization ---\n");
@@ -45,7 +75,7 @@ void display_lsm_tree(LSMTree* lsm) {
 void run_cli(LSMTree* lsm) {
     char command[100], key[100], value[100];
     while (1) {
-        printf("\nEnter command (insert/get/delete/compact/display/exit): ");
+        printf("\nEnter command (insert/get/delete/compact/display/benchmark/exit): ");
         if (scanf("%99s", command) != 1) {
             printf("Error reading command.\n");
             continue;
@@ -65,7 +95,8 @@ void run_cli(LSMTree* lsm) {
             if (scanf("%99s", key) != 1) {
                 printf("Error reading key.\n");
             } else {
-                const char* result = lsm_get(lsm, key);
+                LookupSource source;
+                const char* result = lsm_get(lsm, key, &source);
                 printf("Value for key '%s': %s\n", key, result ? result : "Not found");
             }
         } else if (strcmp(command, "delete") == 0) {
@@ -83,10 +114,19 @@ void run_cli(LSMTree* lsm) {
             printf("LSM Tree compacted.\n");
         } else if (strcmp(command, "display") == 0) {
             display_lsm_tree(lsm);
-        } else {
+        } else if (strcmp(command, "benchmark") == 0) {
+            run_benchmark(lsm);
+        }
+        else {
             printf("Unknown command: %s\n", command);
         }
         // Clear input buffer
         while (getchar() != '\n');
     }
+}
+
+double get_current_time() {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return ts.tv_sec + ts.tv_nsec / 1e9;
 }

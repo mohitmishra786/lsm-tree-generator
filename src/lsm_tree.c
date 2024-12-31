@@ -45,20 +45,20 @@ bool lsm_insert(LSMTree* lsm, const char* key, const char* value) {
     return memtable_insert(lsm->memtable, key, value);
 }
 
-const char* lsm_get(LSMTree* lsm, const char* key) {
-    const char* value = memtable_get(lsm->memtable, key);
-    if (value) {
-        if (strcmp(value, DELETED_VALUE) == 0) {
-            return NULL;
-        }
-        return value;
-    }
-    for (int i = lsm->sstable_count - 1; i >= 0; i--) {
-        value = sstable_get(lsm->sstables[i], key);
-        if (value) return value;
-    }
-    return NULL;
-}
+// const char* lsm_get(LSMTree* lsm, const char* key) {
+//     const char* value = memtable_get(lsm->memtable, key);
+//     if (value) {
+//         if (strcmp(value, DELETED_VALUE) == 0) {
+//             return NULL;
+//         }
+//         return value;
+//     }
+//     for (int i = lsm->sstable_count - 1; i >= 0; i--) {
+//         value = sstable_get(lsm->sstables[i], key);
+//         if (value) return value;
+//     }
+//     return NULL;
+// }
 
 bool lsm_delete(LSMTree* lsm, const char* key) {
     return memtable_insert(lsm->memtable, key, DELETED_VALUE);
@@ -121,4 +121,23 @@ void lsm_compact(LSMTree* lsm) {
     lsm->compact_count++; // Increment compact counter
     memtable_destroy(lsm->memtable);
     lsm->memtable = memtable_create(100);
+}
+
+const char* lsm_get(LSMTree* lsm, const char* key, LookupSource* source) {
+    const char* value = memtable_get(lsm->memtable, key);
+    if (value) {
+        *source = FOUND_IN_MEMTABLE;
+        return value;
+    }
+    for (int i = lsm->sstable_count - 1; i >= 0; i--) {
+        if (!bloom_filter_check(lsm->sstables[i]->bloom_filter, key))
+            continue;
+        value = sstable_get(lsm->sstables[i], key);
+        if (value) {
+            *source = FOUND_IN_SSTABLE;
+            return value;
+        }
+    }
+    *source = NOT_FOUND;
+    return NULL;
 }

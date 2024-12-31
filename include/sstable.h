@@ -4,10 +4,12 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h> // Add this include for FILE
+#include "bloom_filter.h"
 
 typedef struct SSTable {
     FILE* file;
     char fname[256];
+    BloomFilter* bloom_filter;
 } SSTable;
 
 SSTable* sstable_create(const char* fname);
