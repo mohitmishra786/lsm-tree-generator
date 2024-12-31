@@ -5,11 +5,11 @@
 #include "memtable.h"
 #include "sstable.h"
 
-// Full definition of LSMTree
 typedef struct LSMTree {
     MemTable* memtable;
     SSTable** sstables;
     int sstable_count;
+    int compact_count;
 } LSMTree;
 
 LSMTree* lsm_tree_init();
