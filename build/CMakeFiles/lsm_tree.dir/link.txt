@@ -1,1 +1,0 @@
-/usr/bin/cc CMakeFiles/lsm_tree.dir/main.c.o CMakeFiles/lsm_tree.dir/src/cli.c.o CMakeFiles/lsm_tree.dir/src/lsm_tree.c.o CMakeFiles/lsm_tree.dir/src/memtable.c.o CMakeFiles/lsm_tree.dir/src/sstable.c.o -o lsm_tree 

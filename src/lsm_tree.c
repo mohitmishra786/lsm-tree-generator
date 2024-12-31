@@ -8,11 +8,11 @@
 
 #define SSTABLE_NAME "sstable_%d.txt"
 
-struct LSMTree {
-    MemTable* memtable;
-    SSTable** sstables;
-    int sstable_count;
-};
+// struct LSMTree {
+//     MemTable* memtable;
+//     SSTable** sstables;
+//     int sstable_count;
+// };
 
 LSMTree* lsm_tree_init() {
     LSMTree* lsm = malloc(sizeof(LSMTree));

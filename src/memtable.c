@@ -3,12 +3,12 @@
 #include <string.h>
 #include <stdio.h>
 
-struct MemTable {
-    char** keys;
-    char** values;
-    size_t size;
-    size_t capacity;
-};
+// struct MemTable {
+//     char** keys;
+//     char** values;
+//     size_t size;
+//     size_t capacity;
+// };
 
 MemTable* memtable_create(size_t capacity) {
     MemTable* mt = malloc(sizeof(MemTable));
