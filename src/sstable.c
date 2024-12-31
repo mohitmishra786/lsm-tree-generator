@@ -10,7 +10,8 @@
 
 SSTable* sstable_create(const char* fname) {
     SSTable* ss = malloc(sizeof(SSTable));
-    if (!ss) return NULL;
+    if (!ss)
+        return NULL;
     strncpy(ss->fname, fname, sizeof(ss->fname) - 1);
     ss->fname[sizeof(ss->fname) - 1] = '\0';
     ss->file = fopen(fname, "r");
@@ -18,31 +19,46 @@ SSTable* sstable_create(const char* fname) {
         free(ss);
         return NULL;
     }
+    // Initialize Bloom filter parameters
+    size_t size_bits = 1000000; // Adjust based on expected number of keys
+    int num_hash_funcs = 5;
+    ss->bloom_filter = bloom_filter_create(size_bits, num_hash_funcs);
+    if (!ss->bloom_filter) {
+        fclose(ss->file);
+        free(ss);
+        return NULL;
+    }
+    // Populate Bloom filter with keys from SSTable
+    char line[256];
+    while (fgets(line, sizeof(line), ss->file)) {
+        char* value = strchr(line, '\t');
+        if (value) {
+            *value = '\0';
+            bloom_filter_add(ss->bloom_filter, line);
+        }
+    }
+    rewind(ss->file); // Reset file pointer for future reads
     return ss;
 }
 
 void sstable_destroy(SSTable* ss) {
     if (ss) {
         fclose(ss->file);
+        bloom_filter_destroy(ss->bloom_filter);
         free(ss);
     }
 }
 
 const char* sstable_get(SSTable* ss, const char* key) {
-    // Assuming SS Table is sorted for simplicity
-    char line[2048];
-    fseek(ss->file, 0, SEEK_SET);
+    char line[256];
+    rewind(ss->file);
     while (fgets(line, sizeof(line), ss->file)) {
-        char* val = strchr(line, '\t');
-        if (val) {
-            *val = '\0';
+        char* value = strchr(line, '\t');
+        if (value) {
+            *value = '\0';
+            value++;
             if (strcmp(line, key) == 0) {
-                val++;
-                size_t val_len = strlen(val);
-                if (val_len > 0 && val[val_len - 1] == '\n') {
-                    val[val_len - 1] = '\0'; // Remove newline character
-                }
-                return strdup(val);  // Duplicate the string to return a non-const pointer
+                return strdup(value);
             }
         }
     }

@@ -12,10 +12,16 @@ typedef struct LSMTree {
     int compact_count;
 } LSMTree;
 
+typedef enum {
+    FOUND_IN_MEMTABLE,
+    FOUND_IN_SSTABLE,
+    NOT_FOUND
+} LookupSource;
+
 LSMTree* lsm_tree_init();
 void lsm_tree_destroy(LSMTree* lsm);
 bool lsm_insert(LSMTree* lsm, const char* key, const char* value);
-const char* lsm_get(LSMTree* lsm, const char* key);
+const char* lsm_get(LSMTree* lsm, const char* key, LookupSource* source);
 bool lsm_delete(LSMTree* lsm, const char* key);
 void lsm_compact(LSMTree* lsm);
 
