@@ -1,4 +1,4 @@
-# LSM Tree Implementation
+# LSM Tree Generator
 
 This project implements a Log-Structured Merge Tree (LSM Tree) with a memtable, SSTables, and a Bloom filter for efficient key-value storage and retrieval. It includes a CLI for interactive usage and a benchmarking tool to measure performance.
 
